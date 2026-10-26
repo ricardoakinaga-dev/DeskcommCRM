@@ -58,6 +58,16 @@ const plexMono = localFont({
   variable: "--font-mono",
 });
 
+// Disponível ao editor de marca por var(--font-outfit). Só é baixada quando
+// o CSS da instalação a escolhe; a tipografia padrão continua a mesma.
+const outfit = localFont({
+  src: "./fonts/outfit-100-900-latin.woff2",
+  weight: "100 900",
+  display: "swap",
+  preload: false,
+  variable: "--font-outfit",
+});
+
 /**
  * A pilha de camadas da marca da instalação: BANCO acima, `.env` embaixo.
  *
@@ -336,7 +346,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       lang="pt-BR"
       data-theme="light"
       suppressHydrationWarning
-      className={`${atkinson.variable} ${plexMono.variable}`}
+      className={`${atkinson.variable} ${plexMono.variable} ${outfit.variable}`}
     >
       <head>
         {/* Primeiro de tudo: a cor da instalação, antes do CSS e do script de tema. */}

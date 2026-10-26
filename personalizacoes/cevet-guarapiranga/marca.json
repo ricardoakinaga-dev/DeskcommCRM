@@ -1,0 +1,12 @@
+{
+  "app_name": "CeVet Guarapiranga",
+  "accent_hex": "#0B6FB3",
+  "accent_dark_hex": "#8FB5D9",
+  "logo_file": "selo-centro-veterinario.jpg",
+  "favicon_file": "selo-centro-veterinario.jpg",
+  "custom_css_file": "tema.css",
+  "font": "var(--font-outfit)",
+  "direction": "A — Selo renovado",
+  "briefing_date": "2026-10-18",
+  "design_system_date": "2026-10-19"
+}

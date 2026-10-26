@@ -24,6 +24,23 @@ Na mesma página **Marca da instalação**, o administrador da instalação pode
 
 Por segurança, não é um editor de CSS irrestrito: aceita seletores de classes e propriedades visuais de cor, borda, sombra e tipografia. Recusa seletores globais ou por ID, regras `@`, URLs e carregamento remoto, funções fora de `rgb`/`rgba`/`hsl`/`hsla`/`var`/`calc`/`min`/`max`/`clamp`, comentários, escapes, scripts, `!important` e propriedades de layout e posicionamento. O limite é 16 KB. Se uma folha já salva deixar de passar na validação, ela não é aplicada e a tela Marca mostra o motivo. Como a configuração é da instalação, qualquer ajuste também afeta as organizações atendidas por ela; confira as telas depois de salvar.
 
+Também aceita o prefixo exato `[data-theme="light"]` ou `[data-theme="dark"]`
+antes de uma classe e os tokens de cor listados em `TOKENS_VISUAIS_DE_COR`, em
+`lib/branding/css-personalizado.ts`. Cada token exige um hexadecimal literal de
+seis dígitos: variáveis arbitrárias, funções e URLs continuam recusadas nesse
+caminho. A fonte Outfit é local e opcional. Exemplo:
+
+```css
+.font-sans { font-family: var(--font-outfit), system-ui, sans-serif; }
+[data-theme="light"] .font-sans { --color-bg: #F5F8FB; --background: #F5F8FB; }
+[data-theme="dark"] .font-sans { --color-bg: #0B1E30; --background: #0B1E30; }
+```
+
+Ao alterar um token semântico, ajuste também seu alias de compatibilidade
+(`--background` acompanha `--color-bg`, por exemplo). Confira os dois temas,
+os controles e as telas antes de concluir: o editor valida segurança sintática,
+não o contraste da combinação escolhida.
+
 Exemplo:
 
 ```css
@@ -99,8 +116,8 @@ Isso não torna a instalação dedicada obsoleta — ver a comparação abaixo, 
 Sendo direto, para você não descobrir na frente do cliente. Cada linha traz a razão medida, não a desculpa:
 
 - **Domínio por organização.** Uma instalação, um domínio. Não há coluna de domínio no schema, o desvio por host no `proxy.ts` é um NOOP declarado (existe só como documentação da topologia pretendida), e no Edge não há banco para consultar antes de decidir a quem aquele host pertence. Cliente que exige o próprio domínio pede **instalação dedicada**.
-- **Fonte.** A tipografia é a mesma em toda instalação. `next/font` resolve em tempo de **build**, e a imagem que a sua VPS baixa já vem construída — um seletor de fonte no painel salvaria um valor que nada leria. (A fonte é a Atkinson Hyperlegible, escolhida pelo Braille Institute por legibilidade; trocá-la não muda percepção de marca e piora a leitura de quem passa o dia no sistema.)
-- **Tema.** O par claro/escuro é do design system. A sua marca move o **accent** — o que é ação, destaque e foco —, e deliberadamente **não** move o fundo da página: o fundo é o mesmo em toda marca, e é por isso que a cor da barra do navegador também é.
+- **Fonte externa.** O editor permite escolher a Outfit já incluída na imagem, ou fontes do sistema; não aceita upload nem carregamento de fontes remotas. A tipografia padrão continua Atkinson Hyperlegible.
+- **Tema automático.** A cor da marca deriva o accent. Fundos e textos próprios exigem o CSS personalizado descrito acima e conferência nos dois modos. A barra do navegador continua usando a régua do produto.
 - **O relatório de LGPD do titular não leva a sua marca — e isso é de propósito.** Ver a seção própria abaixo.
 - **O alarme de orçamento de IA** ainda sai com a nossa marca. É o único vazamento conhecido, e ele fica: hoje esse alarme não tem agendamento nenhum ligado, então consertar a marca dele não mudaria nada que alguém veja. Sai quando o alarme ganhar cron de verdade.
 - **Dois nomes técnicos não mudam**: o cabeçalho `X-Deskcomm-Signature` dos webhooks de saída e o cookie de sessão. O primeiro é contrato com sistemas de terceiros que já conferem esse nome; renomear derrubaria integração de cliente **em silêncio** — o receptor não dá erro, apenas deixa de reconhecer.

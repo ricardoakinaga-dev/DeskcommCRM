@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CSS_PERSONALIZADO_MAX_BYTES,
   PROPRIEDADES_VISUAIS,
+  TOKENS_VISUAIS_DE_COR,
   validarCssPersonalizado,
 } from "@/lib/branding/css-personalizado";
 
@@ -30,6 +31,86 @@ describe("CSS personalizado da instalação", () => {
       regras: 0,
       declaracoes: 0,
     });
+  });
+
+  it("separa as cores dos temas sem deixar o seletor de tema procurar um descendente da raiz", () => {
+    const resultado = validarCssPersonalizado(
+      ".font-sans { font-family: var(--font-outfit), sans-serif; }\n" +
+        '[data-theme="light"] .font-sans { --color-bg: #F5F8FB; --background: #F5F8FB; }\n' +
+        '[data-theme="dark"] .font-sans, [data-theme="dark"] .bg-bg { --color-bg: #10283F; }',
+    );
+    expect(resultado.erro).toBeNull();
+    expect(resultado.css).toContain(':root:root[data-theme="light"] .font-sans');
+    expect(resultado.css).toContain(
+      ':root:root[data-theme="dark"] .font-sans, :root:root[data-theme="dark"] .bg-bg',
+    );
+    expect(resultado.css).not.toContain(":root:root [data-theme=");
+  });
+
+  it.each([
+    '[data-theme="system"] .a { color: red; }',
+    '[data-theme^="l"] .a { color: red; }',
+    '[data-theme="light"][value="segredo"] .a { color: red; }',
+    '.a [data-theme="light"] { color: red; }',
+    '[data-theme="light"] [type="password"] { color: red; }',
+    ".a { --fonte-remota: #123456; }",
+    ".a { --color-bg: url(https://example.invalid/segredo); }",
+    ".a { --color-bg: var(--imagem); }",
+    ".a { --color-bg: red; }",
+    ".a { --color-bg: #123; }",
+    ".a { --color-bg: #123456 !important; }",
+    ".a { --COLOR-BG: #123456; }",
+    ".a { --radius: #123456; }",
+  ])("recusa atributos e variáveis fora do contrato: %s", (css) => {
+    expect(validarCssPersonalizado(css).css).toBeNull();
+    expect(validarCssPersonalizado(css).erro).toBeTruthy();
+  });
+
+  it("a lista de variáveis revisadas só contém cores conhecidas do tema", () => {
+    expect([...TOKENS_VISUAIS_DE_COR].sort()).toEqual(
+      [
+        "--accent",
+        "--accent-foreground",
+        "--background",
+        "--border",
+        "--card",
+        "--card-foreground",
+        "--color-accent",
+        "--color-accent-fg",
+        "--color-accent-hover",
+        "--color-accent-soft",
+        "--color-bg",
+        "--color-border",
+        "--color-border-strong",
+        "--color-neutral-100",
+        "--color-neutral-200",
+        "--color-neutral-300",
+        "--color-neutral-400",
+        "--color-neutral-50",
+        "--color-neutral-500",
+        "--color-neutral-600",
+        "--color-neutral-700",
+        "--color-neutral-800",
+        "--color-neutral-900",
+        "--color-neutral-950",
+        "--color-surface",
+        "--color-surface-elevated",
+        "--color-text",
+        "--color-text-muted",
+        "--color-text-subtle",
+        "--foreground",
+        "--input",
+        "--muted",
+        "--muted-foreground",
+        "--popover",
+        "--popover-foreground",
+        "--primary",
+        "--primary-foreground",
+        "--ring",
+        "--secondary",
+        "--secondary-foreground",
+      ].sort(),
+    );
   });
 
   it.each([
@@ -78,21 +159,55 @@ describe("CSS personalizado da instalação", () => {
    */
   it("a lista de propriedades só cresce depois de revista contra <image> e <url>", () => {
     const LISTA_REVISADA = [
-      "background-color", "border-bottom-color", "border-bottom-left-radius",
-      "border-bottom-right-radius", "border-color", "border-left-color", "border-radius",
-      "border-right-color", "border-style", "border-top-color", "border-top-left-radius",
-      "border-top-right-radius", "border-width", "box-shadow", "color", "font-family",
-      "font-size", "font-style", "font-weight", "letter-spacing", "line-height",
-      "outline-color", "outline-style", "outline-width", "text-align", "text-decoration",
-      "text-decoration-color", "text-decoration-line", "text-decoration-style",
-      "text-transform", "text-underline-offset",
+      "background-color",
+      "border-bottom-color",
+      "border-bottom-left-radius",
+      "border-bottom-right-radius",
+      "border-color",
+      "border-left-color",
+      "border-radius",
+      "border-right-color",
+      "border-style",
+      "border-top-color",
+      "border-top-left-radius",
+      "border-top-right-radius",
+      "border-width",
+      "box-shadow",
+      "color",
+      "font-family",
+      "font-size",
+      "font-style",
+      "font-weight",
+      "letter-spacing",
+      "line-height",
+      "outline-color",
+      "outline-style",
+      "outline-width",
+      "text-align",
+      "text-decoration",
+      "text-decoration-color",
+      "text-decoration-line",
+      "text-decoration-style",
+      "text-transform",
+      "text-underline-offset",
     ];
     expect([...PROPRIEDADES_VISUAIS].sort()).toEqual(LISTA_REVISADA);
 
     for (const comImagem of [
-      "background", "background-image", "border-image", "border-image-source", "list-style",
-      "list-style-image", "cursor", "mask", "mask-image", "filter", "content", "clip-path",
-      "shape-outside", "src",
+      "background",
+      "background-image",
+      "border-image",
+      "border-image-source",
+      "list-style",
+      "list-style-image",
+      "cursor",
+      "mask",
+      "mask-image",
+      "filter",
+      "content",
+      "clip-path",
+      "shape-outside",
+      "src",
     ]) {
       expect(PROPRIEDADES_VISUAIS.has(comImagem), comImagem).toBe(false);
     }

@@ -5772,8 +5772,8 @@ export const DICIONARIO: Traducoes = {
     es: "No se aplicó el CSS guardado porque contiene una regla no válida.",
   },
   "Regras CSS": { es: "Reglas CSS" },
-  "Use seletores de classe e propriedades visuais (cores, bordas, sombras e tipografia). Sem seletores globais ou por ID, @rules, URLs, scripts, !important ou propriedades de layout e posicionamento. Até 16 KB. Deixe vazio e salve para remover.": {
-    es: "Usa selectores de clase y propiedades visuales (colores, bordes, sombras y tipografía). Sin selectores globales o por ID, reglas @, URL, scripts, !important ni propiedades de diseño o posicionamiento. Hasta 16 KB. Déjalo vacío y guarda para quitarlo.",
+  'Use classes e propriedades visuais. Para separar os temas, prefixe a classe com [data-theme="light"] ou [data-theme="dark"]. Tokens de cor do tema aceitam hex de seis dígitos. Outfit: font-family: var(--font-outfit), sans-serif. Sem seletores por ID, @rules, URLs, scripts, !important ou propriedades de layout. Até 16 KB. Deixe vazio e salve para remover.': {
+    es: 'Usa clases y propiedades visuales. Para separar los temas, antepón [data-theme="light"] o [data-theme="dark"] a la clase. Los tokens de color aceptan hex de seis dígitos. Outfit: font-family: var(--font-outfit), sans-serif. Sin selectores por ID, reglas @, URL, scripts, !important ni propiedades de diseño. Hasta 16 KB. Déjalo vacío y guarda para quitarlo.',
   },
   "Ver exemplo": { es: "Ver ejemplo" },
   "Salvar CSS": { es: "Guardar CSS" },

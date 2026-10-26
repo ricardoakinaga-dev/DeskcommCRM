@@ -1,4 +1,4 @@
-<!-- traduzido-de: docs/white-label.md@e862cd45e445 -->
+<!-- traduzido-de: docs/white-label.md@677877525c56 -->
 
 [🇧🇷 Português](white-label.md) · 🇺🇸 English · [🇪🇸 Español](white-label.es.md)
 
@@ -21,6 +21,22 @@ The color is **derived**, not applied raw: one hex yields eleven shades in both 
 **And the application and browser icon.** Below the logo, this field accepts a square PNG or JPG up to 512 KB, preferably 512×512 or larger. The same image identifies browser tabs, including login, and the installed app. The manifest supplies 192×192 and 512×512 PNGs, rendered from the bounded installation file in Storage; arbitrary URLs are never fetched. Without a valid file, the product symbol or brand initial remains. Removing the file restores that drawing. This is installation branding, not per-organization branding. Browsers may cache an existing installation; reinstall the app to check a new icon.
 
 ### Custom CSS
+
+The editor also accepts the exact prefix `[data-theme="light"]` or
+`[data-theme="dark"]` before a class, and the color tokens listed in
+`TOKENS_VISUAIS_DE_COR` in `lib/branding/css-personalizado.ts`. Token values must
+be literal six-digit hex colors; arbitrary variables, functions and URLs remain
+blocked on this path. Outfit is bundled locally and optional. For example:
+
+```css
+.font-sans { font-family: var(--font-outfit), system-ui, sans-serif; }
+[data-theme="light"] .font-sans { --color-bg: #F5F8FB; --background: #F5F8FB; }
+[data-theme="dark"] .font-sans { --color-bg: #0B1E30; --background: #0B1E30; }
+```
+
+When changing a semantic token, also update its compatibility alias
+(`--background` follows `--color-bg`, for example). Check controls and screens
+in both modes after saving: syntax validation does not check color contrast.
 
 On the same **Installation Brand** page, the installation administrator can add CSS for fine visual adjustments to the login and the screens of every organization. The stylesheet applies globally without restarting the server, and can be removed by clearing the field and saving.
 
@@ -101,8 +117,8 @@ This does not make the dedicated installation obsolete — see the comparison be
 Straight to the point, so that you do not find out in front of the client. Each line carries the measured reason, not the excuse:
 
 - **Domain per organization.** One installation, one domain. There is no domain column in the schema, the host-based branching in `proxy.ts` is a declared NOOP (it exists only as documentation of the intended topology), and at the Edge there is no database to query before deciding whom that host belongs to. A client who demands their own domain is asking for a **dedicated installation**.
-- **Font.** Typography is the same in every installation. `next/font` resolves at **build** time, and the image your VPS downloads already arrives built — a font picker in the panel would save a value that nothing would read. (The font is Atkinson Hyperlegible, chosen by the Braille Institute for legibility; swapping it does not change brand perception and makes reading worse for whoever spends the day inside the system.)
-- **Theme.** The light/dark pair belongs to the design system. Your brand moves the **accent** — what is action, highlight and focus — and deliberately does **not** move the page background: the background is the same under every brand, and that is why the browser bar color is too.
+- **External fonts.** Custom CSS can select the bundled Outfit using `font-family: var(--font-outfit), sans-serif`, or system fonts. Font uploads and remote fonts are not supported. Atkinson Hyperlegible remains the default.
+- **Automatic themes.** The brand color derives the accent. Custom CSS can override the color tokens listed in `TOKENS_VISUAIS_DE_COR` using six-digit hex literals and the exact prefixes `[data-theme="light"]` and `[data-theme="dark"]` before a class. Check both modes after saving; the editor validates syntax and security, not contrast. The browser bar keeps the product's colors.
 - **The LGPD data-subject report does not carry your brand — and that is on purpose.** See its own section below.
 - **The AI budget alarm** still goes out with our brand. It is the only known leak, and it stays: today that alarm has no schedule wired to it at all, so fixing its brand would change nothing anyone sees. It goes out when the alarm gets a real cron.
 - **Two technical names do not change**: the `X-Deskcomm-Signature` header of outbound webhooks and the session cookie. The first is a contract with third-party systems that already check that name; renaming it would break a client's integration **silently** — the receiver raises no error, it merely stops recognizing.

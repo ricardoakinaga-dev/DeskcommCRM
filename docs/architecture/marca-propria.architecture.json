@@ -91,7 +91,7 @@
     { "id": "resolver", "lane": "resolver", "col": 5, "type": "service", "label": "lib/branding/resolve.ts", "sublabel": "pilha org → instalação → .env → padrão do produto; cor recusada NÃO apaga a camada de baixo" },
     { "id": "rampa", "lane": "resolver", "col": 5, "type": "service", "label": "rampa.ts + contraste.ts", "sublabel": "1 hex → 11 stops nos 2 temas; piso por PAPEL × SUPERFÍCIE, não pela semente" },
     { "id": "css", "lane": "resolver", "col": 6, "type": "service", "label": "lib/branding/css.ts", "sublabel": "serialização com allowlist: emite --color-brand e a família do accent — NUNCA --color-bg" },
-    { "id": "csscustom", "lane": "resolver", "col": 7, "type": "service", "label": "lib/branding/css-personalizado.ts", "sublabel": "PostCSS AST · classes + propriedades cosméticas · sem at-rules, URLs, escapes, layout ou !important" },
+    { "id": "csscustom", "lane": "resolver", "col": 7, "type": "service", "label": "lib/branding/css-personalizado.ts", "sublabel": "PostCSS AST · classes + temas light/dark exatos · tokens de cor em hex literal · Outfit local opt-in · sem at-rules, URLs, escapes, layout ou !important" },
     { "id": "saida", "lane": "resolver", "col": 6, "type": "service", "label": "lib/branding/saida.ts", "sublabel": "marcaDaSaida(orgId|null) → um hex + uma frente legível · tema CLARO sempre · NUNCA LANÇA" },
     { "id": "barra", "lane": "resolver", "col": 6, "type": "service", "label": "lib/branding/barra-do-navegador.ts", "sublabel": "os 2 hexes do themeColor, importados de REGUA_DO_PRODUTO (eram cópia em 3 arquivos)" },
 
@@ -220,7 +220,7 @@
       "title": "Fronteiras deliberadas — o que continua NÃO sendo configurável, com a razão medida",
       "items": [
         "DOMÍNIO por organização: fora. Zero coluna no schema, o proxy é NOOP nesse eixo, e no Edge não há banco para consultar antes de decidir o host",
-        "FONTE por tenant: fora. next/font resolve em BUILD time e a imagem é pré-buildada — um seletor de fonte seria controle decorativo",
+        "FONTE por tenant: fora. O CSS da instalação pode escolher Outfit já incluída na imagem (var(--font-outfit), sem preload) ou fontes do sistema. Upload e fontes remotas continuam recusados",
         "X-Deskcomm-Signature e sb-deskcomm-auth NÃO são renomeados: o primeiro é contrato de fio com receptores de terceiros, o segundo é a sessão de quem está logado. 'Completar o whitelabel' ali derruba integração de cliente em silêncio",
         "lib/email/templates/ai-budget-alarm.tsx segue com a nossa marca: não tem rota de cron, não tem linha no docker/scheduler/entrypoint.sh e, desde a limpeza do teto de orçamento (0159), não tem chamador nenhum — workers/ai-budget-checker.cron.ts, o único, foi apagado. Dívida D1, com a condição de saída escrita",
         "quem envia e-mail é o APP (via event-log-drain, batido pelo scheduler), NUNCA o contêiner worker — que roda o agent-engine e não importa e-mail nenhum. Quem for provar reiniciando 'o worker' reinicia o processo errado"

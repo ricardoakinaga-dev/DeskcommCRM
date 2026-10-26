@@ -1,4 +1,4 @@
-<!-- traduzido-de: docs/white-label.md@e862cd45e445 -->
+<!-- traduzido-de: docs/white-label.md@677877525c56 -->
 
 [🇧🇷 Português](white-label.md) · [🇺🇸 English](white-label.en.md) · 🇪🇸 Español
 
@@ -21,6 +21,22 @@ El color es **derivado**, no aplicado en crudo: de un hex salen once tonos en lo
 **Y el ícono de la aplicación y del navegador.** Debajo del logo, este campo acepta un PNG o JPG cuadrado de hasta 512 KB, preferiblemente 512×512 o mayor. La misma imagen aparece en las pestañas, incluido el acceso, y en la aplicación instalada. El manifiesto ofrece PNG de 192×192 y 512×512, renderizados desde el archivo limitado de la instalación en Storage; nunca se buscan URL arbitrarias. Sin archivo válido, conserva el símbolo del producto o la inicial de la marca. Quitar el archivo restaura ese dibujo. Es la marca de la instalación, no de cada organización. El navegador puede guardar una instalación anterior en caché; reinstala la aplicación para comprobar un nuevo ícono.
 
 ### CSS personalizado
+
+El editor también acepta el prefijo exacto `[data-theme="light"]` o
+`[data-theme="dark"]` antes de una clase y los tokens de color listados en
+`TOKENS_VISUAIS_DE_COR`, en `lib/branding/css-personalizado.ts`. Cada token exige
+un hexadecimal literal de seis dígitos; las variables arbitrarias, funciones y
+URL siguen bloqueadas en este camino. Outfit es local y opcional. Ejemplo:
+
+```css
+.font-sans { font-family: var(--font-outfit), system-ui, sans-serif; }
+[data-theme="light"] .font-sans { --color-bg: #F5F8FB; --background: #F5F8FB; }
+[data-theme="dark"] .font-sans { --color-bg: #0B1E30; --background: #0B1E30; }
+```
+
+Al cambiar un token semántico, ajusta también su alias de compatibilidad
+(`--background` acompaña a `--color-bg`, por ejemplo). Revisa controles y pantallas
+en ambos modos: el editor valida sintaxis y seguridad, no el contraste.
 
 En la misma página **Marca de la instalación**, el administrador de la instalación puede agregar CSS para ajustes visuales finos en el login y en las pantallas de todas las organizaciones. La hoja se aplica globalmente, sin reiniciar el servidor, y se puede quitar borrando el contenido y guardando.
 
@@ -101,8 +117,8 @@ Esto no vuelve obsoleta la instalación dedicada — ver la comparación de abaj
 Directo, para que no lo descubras delante del cliente. Cada línea trae la razón medida, no la excusa:
 
 - **Dominio por organización.** Una instalación, un dominio. No hay columna de dominio en el esquema, la bifurcación por host en `proxy.ts` es un NOOP declarado (existe solo como documentación de la topología pretendida), y en el Edge no hay base de datos que consultar antes de decidir a quién pertenece ese host. El cliente que exige su propio dominio pide **instalación dedicada**.
-- **Tipografía.** La tipografía es la misma en toda instalación. `next/font` resuelve en tiempo de **build**, y la imagen que baja tu VPS ya viene construida — un selector de fuente en el panel guardaría un valor que nadie leería. (La fuente es la Atkinson Hyperlegible, elegida por el Braille Institute por legibilidad; cambiarla no altera la percepción de marca y empeora la lectura de quien pasa el día dentro del sistema.)
-- **Tema.** El par claro/oscuro es del design system. Tu marca mueve el **accent** — lo que es acción, destaque y foco — y deliberadamente **no** mueve el fondo de la página: el fondo es el mismo en toda marca, y por eso el color de la barra del navegador también.
+- **Fuentes externas.** El CSS personalizado permite elegir Outfit, incluida en la imagen, con `font-family: var(--font-outfit), sans-serif`, o fuentes del sistema. No admite subir fuentes ni cargarlas de forma remota. Atkinson Hyperlegible sigue como predeterminada.
+- **Tema automático.** El color de marca deriva el accent. El CSS personalizado permite cambiar los tokens de `TOKENS_VISUAIS_DE_COR` con hexadecimales de seis dígitos y separar clases con los prefijos exactos `[data-theme="light"]` y `[data-theme="dark"]`. Comprueba ambos modos: el editor valida seguridad y sintaxis, no el contraste. La barra del navegador conserva los colores del producto.
 - **El informe de LGPD del titular no lleva tu marca — y es a propósito.** Ver la sección propia más abajo.
 - **La alarma de presupuesto de IA** todavía sale con nuestra marca. Es la única fuga conocida, y se queda: hoy esa alarma no tiene ninguna programación conectada, así que arreglar su marca no cambiaría nada que alguien vea. Sale cuando la alarma tenga un cron de verdad.
 - **Dos nombres técnicos no cambian**: la cabecera `X-Deskcomm-Signature` de los webhooks de salida y la cookie de sesión. El primero es un contrato con sistemas de terceros que ya verifican ese nombre; renombrarlo tumbaría la integración de un cliente **en silencio** — el receptor no da error, simplemente deja de reconocer.

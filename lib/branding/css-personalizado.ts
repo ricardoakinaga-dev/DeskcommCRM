@@ -48,6 +48,61 @@ export const PROPRIEDADES_VISUAIS: ReadonlySet<string> = new Set([
   "text-underline-offset",
 ]);
 
+/** Somente tokens de COR do tema. Valores são hex literais, nunca var()/URL:
+ * uma variável CSS arbitrária pode alimentar uma propriedade que carrega imagem.
+ * A lista fechada e o valor literal impedem essa passagem indireta.
+ */
+export const TOKENS_VISUAIS_DE_COR: ReadonlySet<string> = new Set([
+  "--color-bg",
+  "--color-surface",
+  "--color-surface-elevated",
+  "--color-text",
+  "--color-text-muted",
+  "--color-text-subtle",
+  "--color-border",
+  "--color-border-strong",
+  "--color-accent",
+  "--color-accent-fg",
+  "--color-accent-hover",
+  "--color-accent-soft",
+  "--color-neutral-50",
+  "--color-neutral-100",
+  "--color-neutral-200",
+  "--color-neutral-300",
+  "--color-neutral-400",
+  "--color-neutral-500",
+  "--color-neutral-600",
+  "--color-neutral-700",
+  "--color-neutral-800",
+  "--color-neutral-900",
+  "--color-neutral-950",
+  "--background",
+  "--foreground",
+  "--card",
+  "--card-foreground",
+  "--popover",
+  "--popover-foreground",
+  "--primary",
+  "--primary-foreground",
+  "--secondary",
+  "--secondary-foreground",
+  "--muted",
+  "--muted-foreground",
+  "--accent",
+  "--accent-foreground",
+  "--border",
+  "--input",
+  "--ring",
+]);
+
+// Só o atributo público do tema, em posição fixa. Não aceita atributos de
+// campos, valores parciais, :has(), nem seletores que possam inspecionar dados.
+const PREFIXO_DO_TEMA = /^\[data-theme="(light|dark)"\]\s+/;
+
+function semPrefixoDoTema(seletor: string): string {
+  return seletor.replace(PREFIXO_DO_TEMA, "");
+}
+
 const PARTE_DO_SELETOR = String.raw`(?:\.[A-Za-z_][A-Za-z0-9_-]*)+(?::(?:hover|focus|focus-visible|active|disabled|checked|first-child|last-child))*`;
 const SELETOR_VISUAL = new RegExp(
   `^${PARTE_DO_SELETOR}(?:(?:\\s+|\\s*>\\s*)${PARTE_DO_SELETOR})*$`,
@@ -59,7 +114,17 @@ const VALOR_CSS_SEGURO = /^[#A-Za-z0-9_.,%() "'/+\-]+$/;
  * valor tem de estar aqui; parêntese sem nome (agrupamento dentro de `calc`)
  * passa.
  */
-const FUNCOES_PERMITIDAS = new Set(["rgb", "rgba", "hsl", "hsla", "var", "calc", "min", "max", "clamp"]);
+const FUNCOES_PERMITIDAS = new Set([
+  "rgb",
+  "rgba",
+  "hsl",
+  "hsla",
+  "var",
+  "calc",
+  "min",
+  "max",
+  "clamp",
+]);
 const CHAMADA_DE_FUNCAO = /([A-Za-z0-9_-]*)\s*\(/g;
 const CARACTERES_NAO_PERMITIDOS = /[\\<\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
@@ -128,7 +193,10 @@ export function validarCssPersonalizado(entrada: string): ResultadoCss {
     }
 
     const seletores = no.selector.split(",").map((seletor) => seletor.trim());
-    if (seletores.length === 0 || seletores.some((seletor) => !SELETOR_VISUAL.test(seletor))) {
+    if (
+      seletores.length === 0 ||
+      seletores.some((seletor) => !SELETOR_VISUAL.test(semPrefixoDoTema(seletor)))
+    ) {
       erro =
         "Use seletores formados por classes, como .text-muted-foreground ou .rounded-md:hover.";
       return false;
@@ -147,6 +215,17 @@ export function validarCssPersonalizado(entrada: string): ResultadoCss {
       if (declaracoes > 500) {
         erro = "O CSS pode ter no máximo 500 declarações.";
         return false;
+      }
+      if (filho.prop.startsWith("--")) {
+        if (
+          !TOKENS_VISUAIS_DE_COR.has(filho.prop) ||
+          !/^#[0-9a-f]{6}$/i.test(filho.value) ||
+          filho.important
+        ) {
+          erro = "Use apenas tokens de cor permitidos, com valor hexadecimal de seis dígitos.";
+          return false;
+        }
+        continue;
       }
       if (!PROPRIEDADES_VISUAIS.has(filho.prop.toLowerCase())) {
         erro = "Essa propriedade não é permitida; use apenas propriedades visuais.";
@@ -176,7 +255,13 @@ export function validarCssPersonalizado(entrada: string): ResultadoCss {
   raiz.walkRules((regra) => {
     regra.selector = regra.selector
       .split(",")
-      .map((seletor) => `:root:root ${seletor.trim()}`)
+      .map((seletor) => {
+        const limpo = seletor.trim();
+        const tema = limpo.match(PREFIXO_DO_TEMA)?.[1];
+        return tema
+          ? `:root:root[data-theme="${tema}"] ${semPrefixoDoTema(limpo)}`
+          : `:root:root ${limpo}`;
+      })
       .join(", ");
   });
 

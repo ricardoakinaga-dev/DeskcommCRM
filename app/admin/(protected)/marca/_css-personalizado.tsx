@@ -75,7 +75,7 @@ export function CssPersonalizado({
           />
           <p id="custom-css-ajuda" className="text-xs text-text-muted">
             {t(
-              "Use seletores de classe e propriedades visuais (cores, bordas, sombras e tipografia). Sem seletores globais ou por ID, @rules, URLs, scripts, !important ou propriedades de layout e posicionamento. Até 16 KB. Deixe vazio e salve para remover.",
+              'Use classes e propriedades visuais. Para separar os temas, prefixe a classe com [data-theme="light"] ou [data-theme="dark"]. Tokens de cor do tema aceitam hex de seis dígitos. Outfit: font-family: var(--font-outfit), sans-serif. Sem seletores por ID, @rules, URLs, scripts, !important ou propriedades de layout. Até 16 KB. Deixe vazio e salve para remover.',
             )}
           </p>
         </div>

@@ -21,6 +21,11 @@ que o `next/font/google` baixava.
 | `source-serif-4-200-900-latin.woff2` | Source Serif 4 | variável 200–900 | latin | `sourceserif4/v14` |
 | `ibm-plex-sans-300-700-latin.woff2` | IBM Plex Sans | variável, usada em 300–700 | latin | `ibmplexsans/v23` |
 | `jetbrains-mono-100-800-latin.woff2` | JetBrains Mono | variável 100–800 | latin | `jetbrainsmono/v24` |
+| `outfit-100-900-latin.woff2` | Outfit | variável 100–900 | latin (inclui acentos do português) | design system CeVet, arquivo original do Google Fonts |
+
+Outfit fica disponível ao CSS personalizado em `/admin/marca` por
+`font-family: var(--font-outfit), sans-serif`. Não é pré-carregada e não muda a
+fonte padrão: só é transferida quando a instalação a escolhe.
 
 ## Como baixar de novo
 
