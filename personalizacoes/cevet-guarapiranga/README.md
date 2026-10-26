@@ -5,6 +5,12 @@ briefing e do design system do Centro Veterinário Guarapiranga consultados no
 Gbrain. Os arquivos desta pasta são referências para configurar a marca pela
 interface; não alteram automaticamente outras instalações.
 
+## Branch permanente
+
+A branch `custom` é a linha permanente de personalização desta instalação.
+Novas customizações devem ser commitadas nela. Atualizações do produto podem
+ser incorporadas por merge da `main`, preservando o histórico e os ajustes locais.
+
 ## Aplicar pela tela
 
 1. Entre como administrador da instalação e abra **Marca** (`/admin/marca`).
