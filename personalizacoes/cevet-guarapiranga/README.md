@@ -11,6 +11,28 @@ A branch `custom` é a linha permanente de personalização desta instalação.
 Novas customizações devem ser commitadas nela. Atualizações do produto podem
 ser incorporadas por merge da `main`, preservando o histórico e os ajustes locais.
 
+## Integração da upstream em 16/11/2026
+
+A `main` em `b193a682353d0f8ddefb7e34e64f29870dd7d7b5` foi incorporada
+preservando os arquivos desta identidade, a Outfit local e a proteção dos logs
+de login. O novo campo **CSS do tema escuro** convive com os prefixos de tema
+do `tema.css` já salvo no campo **CSS dos dois temas**.
+
+A prova foi feita pela tela Marca, num banco local fresco do `baseline.sql`.
+O navegador confirmou a Outfit, as cores do tema, o isolamento do campo escuro
+e a ausência de rolagem horizontal em quatro combinações:
+
+- Desktop claro: [`evidence/custom-upstream-20261116/login-light-1280.png`](https://github.com/ricardoakinaga-dev/DeskcommCRM/blob/custom/evidence/custom-upstream-20261116/login-light-1280.png).
+- Desktop escuro: [`evidence/custom-upstream-20261116/login-dark-1280.png`](https://github.com/ricardoakinaga-dev/DeskcommCRM/blob/custom/evidence/custom-upstream-20261116/login-dark-1280.png).
+- Celular claro: [`evidence/custom-upstream-20261116/login-light-390.png`](https://github.com/ricardoakinaga-dev/DeskcommCRM/blob/custom/evidence/custom-upstream-20261116/login-light-390.png).
+- Celular escuro: [`evidence/custom-upstream-20261116/login-dark-390.png`](https://github.com/ricardoakinaga-dev/DeskcommCRM/blob/custom/evidence/custom-upstream-20261116/login-dark-390.png).
+
+As medições estão em
+[`validation.json`](../../evidence/custom-upstream-20261116/validation.json).
+Com o ambiente local de E2E semeado e o app na porta 56301, a prova pode ser
+repetida com `pnpm exec tsx --env-file=.env.e2e evidence/custom-upstream-20261116/validate-ui.mjs`.
+O script restaura os dois campos de CSS ao terminar.
+
 ## Aplicar pela tela
 
 1. Entre como administrador da instalação e abra **Marca** (`/admin/marca`).
