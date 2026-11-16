@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-11-16T10:31:51.757Z",
+  "main": "b193a682353d0f8ddefb7e34e64f29870dd7d7b5",
+  "database": "fresh local baseline.sql",
+  "checks": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "backgroundToken": "#f5f8fb",
+      "font": "outfit, \"outfit Fallback\", system-ui, sans-serif",
+      "darkFieldScoped": true,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "backgroundToken": "#0b1e30",
+      "font": "outfit, \"outfit Fallback\", system-ui, sans-serif",
+      "darkFieldScoped": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "backgroundToken": "#f5f8fb",
+      "font": "outfit, \"outfit Fallback\", system-ui, sans-serif",
+      "darkFieldScoped": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "backgroundToken": "#0b1e30",
+      "font": "outfit, \"outfit Fallback\", system-ui, sans-serif",
+      "darkFieldScoped": true,
+      "overflow": false
+    }
+  ]
+}
