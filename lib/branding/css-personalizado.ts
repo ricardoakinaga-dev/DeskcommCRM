@@ -1,9 +1,31 @@
 import postcss, { type Root } from "postcss";
 
+import { ESCOPO_DA_INSTALACAO } from "@/lib/extensions/tema";
 import { valorDaInstalacao } from "@/lib/instalacao/config";
 
 export const CHAVE_CSS_PERSONALIZADO = "APP_CUSTOM_CSS";
+/**
+ * A folha do tema escuro é uma chave SEPARADA, e não uma marcação dentro do
+ * mesmo texto (#4463). Os prefixos de tema já salvos pela instalação continuam
+ * válidos, mas nunca ampliam o escopo do campo escuro para o tema claro.
+ */
+export const CHAVE_CSS_PERSONALIZADO_ESCURO = "APP_CUSTOM_CSS_DARK";
 export const CSS_PERSONALIZADO_MAX_BYTES = 16 * 1024;
+
+/** Os dois temas em que a folha pode ser escopada. */
+export type EscopoDoCssPersonalizado = "claro" | "escuro";
+
+/**
+ * O prefixo de cada escopo vem do MESMO par que o tema da instalação já usa
+ * (`ESCOPO_DA_INSTALACAO`, `lib/extensions/tema.ts`): claro é `:root:root` e
+ * escuro é `:root:root[data-theme="dark"]`. Duas réguas escritas à mão
+ * divergiriam no dia em que o atributo do tema mudasse — e a folha do cliente
+ * passaria a valer em tema nenhum, sem erro nenhum na tela.
+ */
+const PREFIXO_DO_ESCOPO: Record<EscopoDoCssPersonalizado, string> = {
+  claro: ESCOPO_DA_INSTALACAO[0][0],
+  escuro: ESCOPO_DA_INSTALACAO[1][0],
+};
 
 const TTL_MEMO_MS = 30_000;
 /**
@@ -152,8 +174,15 @@ function recusar(erro: string): ResultadoCss {
  * CSS de marca deliberadamente limitado a seletores de classes e propriedades
  * visuais. Não aceita código, regras de layout que ocultem controles, at-rules,
  * recursos remotos, escapes ou conteúdo capaz de sair da tag `<style>`.
+ *
+ * `escopo` decide só o PREFIXO, nunca a allowlist: `escuro` gera
+ * `:root:root[data-theme="dark"]` e a regra passa a valer apenas com o tema
+ * escuro ativo (#4463).
  */
-export function validarCssPersonalizado(entrada: string): ResultadoCss {
+export function validarCssPersonalizado(
+  entrada: string,
+  escopo: EscopoDoCssPersonalizado = "claro",
+): ResultadoCss {
   const fonte = entrada.trim();
   if (!fonte) return { css: null, erro: null, regras: 0, declaracoes: 0 };
   if (new TextEncoder().encode(fonte).byteLength > CSS_PERSONALIZADO_MAX_BYTES) {
@@ -252,15 +281,22 @@ export function validarCssPersonalizado(entrada: string): ResultadoCss {
 
   // A especificidade reforçada deixa os ajustes visuais da instalação vencerem
   // utilitários de tema sem depender da ordem dos estilos emitidos pelo Next.
+  // O escopo do campo e o prefixo de tema validado são aplicados na mesma raiz.
+  // Um prefixo claro dentro do campo escuro exige os dois temas simultaneamente
+  // e não casa: o CSS salvo nunca consegue ampliar o escopo do campo.
   raiz.walkRules((regra) => {
     regra.selector = regra.selector
       .split(",")
       .map((seletor) => {
         const limpo = seletor.trim();
         const tema = limpo.match(PREFIXO_DO_TEMA)?.[1];
-        return tema
-          ? `:root:root[data-theme="${tema}"] ${semPrefixoDoTema(limpo)}`
-          : `:root:root ${limpo}`;
+        const prefixo =
+          tema === "dark"
+            ? PREFIXO_DO_ESCOPO.escuro
+            : tema === "light"
+              ? `${PREFIXO_DO_ESCOPO[escopo]}[data-theme="light"]`
+              : PREFIXO_DO_ESCOPO[escopo];
+        return `${prefixo} ${semPrefixoDoTema(limpo)}`;
       })
       .join(", ");
   });
@@ -275,6 +311,7 @@ type CacheCss = {
 };
 type EstadoGlobal = typeof globalThis & {
   __cssPersonalizadoDaInstalacao?: CacheCss;
+  __cssPersonalizadoEscuroDaInstalacao?: CacheCss;
   __geracaoCssPersonalizadoDaInstalacao?: number;
 };
 
@@ -282,34 +319,65 @@ type EstadoGlobal = typeof globalThis & {
  * Leitura memoizada: a folha é aplicada em toda rota, mas lida do banco poucas
  * vezes. O memo guarda o resultado VALIDADO junto com o texto — o layout raiz
  * pede a folha em toda tela, e o parse roda uma vez por leitura do banco.
+ *
+ * Um slot por ESCOPO: as duas folhas são chaves distintas em `platform_config`,
+ * com validação e prefixo próprios, e uma não pode servir de cache para a outra.
  */
-async function lerDaInstalacao(): Promise<CacheCss> {
+async function lerDaInstalacao(
+  chave: string,
+  escopo: EscopoDoCssPersonalizado,
+  slot: "__cssPersonalizadoDaInstalacao" | "__cssPersonalizadoEscuroDaInstalacao",
+): Promise<CacheCss> {
   const global = globalThis as EstadoGlobal;
-  const atual = global.__cssPersonalizadoDaInstalacao;
+  const atual = global[slot];
   if (atual && atual.expiraEm > Date.now()) return atual;
 
   const geracao = global.__geracaoCssPersonalizadoDaInstalacao ?? 0;
-  const { valor } = await valorDaInstalacao(CHAVE_CSS_PERSONALIZADO);
+  const { valor } = await valorDaInstalacao(chave);
   const css = valor ?? "";
   const lido: CacheCss = {
     valor: css,
-    validacao: validarCssPersonalizado(css),
+    validacao: validarCssPersonalizado(css, escopo),
     expiraEm: Date.now() + TTL_MEMO_MS,
   };
   if ((global.__geracaoCssPersonalizadoDaInstalacao ?? 0) === geracao) {
-    global.__cssPersonalizadoDaInstalacao = lido;
+    global[slot] = lido;
   }
   return lido;
 }
 
 /** O texto gravado, como o administrador escreveu (o editor de `/admin/marca`). */
 export async function cssPersonalizadoDaInstalacao(): Promise<string> {
-  return (await lerDaInstalacao()).valor;
+  return (await lerDaInstalacao(CHAVE_CSS_PERSONALIZADO, "claro", "__cssPersonalizadoDaInstalacao"))
+    .valor;
 }
 
 /** A folha gravada, já validada e escopada — o que o layout raiz aplica. */
 export async function validacaoDoCssDaInstalacao(): Promise<ResultadoCss> {
-  return (await lerDaInstalacao()).validacao;
+  return (await lerDaInstalacao(CHAVE_CSS_PERSONALIZADO, "claro", "__cssPersonalizadoDaInstalacao"))
+    .validacao;
+}
+
+/** O texto do tema escuro, separado do claro: o editor mostra os dois campos. */
+export async function cssPersonalizadoEscuroDaInstalacao(): Promise<string> {
+  return (
+    await lerDaInstalacao(
+      CHAVE_CSS_PERSONALIZADO_ESCURO,
+      "escuro",
+      "__cssPersonalizadoEscuroDaInstalacao",
+    )
+  ).valor;
+}
+
+/** A folha do escuro, validada e prefixada com `[data-theme="dark"]`. */
+export async function validacaoDoCssEscuroDaInstalacao(): Promise<ResultadoCss> {
+  return (
+    await lerDaInstalacao(
+      CHAVE_CSS_PERSONALIZADO_ESCURO,
+      "escuro",
+      "__cssPersonalizadoEscuroDaInstalacao",
+    )
+  ).validacao;
 }
 
 export function invalidarCssPersonalizadoDaInstalacao(): void {
@@ -317,4 +385,5 @@ export function invalidarCssPersonalizadoDaInstalacao(): void {
   global.__geracaoCssPersonalizadoDaInstalacao =
     (global.__geracaoCssPersonalizadoDaInstalacao ?? 0) + 1;
   delete global.__cssPersonalizadoDaInstalacao;
+  delete global.__cssPersonalizadoEscuroDaInstalacao;
 }

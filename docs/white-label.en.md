@@ -1,4 +1,4 @@
-<!-- traduzido-de: docs/white-label.md@677877525c56 -->
+<!-- traduzido-de: docs/white-label.md@eeb3369bc621 -->
 
 [🇧🇷 Português](white-label.md) · 🇺🇸 English · [🇪🇸 Español](white-label.es.md)
 
@@ -22,6 +22,10 @@ The color is **derived**, not applied raw: one hex yields eleven shades in both 
 
 ### Custom CSS
 
+On the same **Installation Brand** page, the installation administrator can add CSS for fine visual adjustments to the login and the screens of every organization. The stylesheet applies globally without restarting the server, and can be removed by clearing the field and saving.
+
+For safety, this is not an unrestricted CSS editor: it accepts class selectors and visual color, border, shadow, and typography properties. It rejects global or ID selectors, `@` rules, URLs and remote loading, functions other than `rgb`/`rgba`/`hsl`/`hsla`/`var`/`calc`/`min`/`max`/`clamp`, comments, escapes, scripts, `!important`, and layout or positioning properties. The limit is 16 KB. If a saved stylesheet no longer passes validation, it is not applied and the Brand page shows the reason. Because this setting belongs to the installation, every organization it serves is affected; review the screens after saving.
+
 The editor also accepts the exact prefix `[data-theme="light"]` or
 `[data-theme="dark"]` before a class, and the color tokens listed in
 `TOKENS_VISUAIS_DE_COR` in `lib/branding/css-personalizado.ts`. Token values must
@@ -38,9 +42,7 @@ When changing a semantic token, also update its compatibility alias
 (`--background` follows `--color-bg`, for example). Check controls and screens
 in both modes after saving: syntax validation does not check color contrast.
 
-On the same **Installation Brand** page, the installation administrator can add CSS for fine visual adjustments to the login and the screens of every organization. The stylesheet applies globally without restarting the server, and can be removed by clearing the field and saving.
-
-For safety, this is not an unrestricted CSS editor: it accepts class selectors and visual color, border, shadow, and typography properties. It rejects global or ID selectors, `@` rules, URLs and remote loading, functions other than `rgb`/`rgba`/`hsl`/`hsla`/`var`/`calc`/`min`/`max`/`clamp`, comments, escapes, scripts, `!important`, and layout or positioning properties. The limit is 16 KB. If a saved stylesheet no longer passes validation, it is not applied and the Brand page shows the reason. Because this setting belongs to the installation, every organization it serves is affected; review the screens after saving.
+The editor has **two fields**. The first applies to both themes; the second, **Dark theme CSS**, applies only while the dark theme is active — it is emitted scoped to the theme, so a rule written there never shows up in the light theme. That is how to pick a color that works in the dark without ruining the light one. Both stylesheets are validated together: if either has an invalid rule, neither is applied and the Brand page says which field to fix.
 
 Example:
 
@@ -51,6 +53,20 @@ Example:
 
 .rounded-md {
 	border-radius: 12px;
+}
+```
+
+**Color per section of the side menu.** The menu has stable classes meant for this CSS. Every group has `nav-grupo`, and each one also has its own: `nav-grupo-atendimento`, `nav-grupo-crm`, `nav-grupo-ia`, `nav-grupo-canais`, `nav-grupo-analise` and `nav-grupo-organizacao` (the footer, with Settings and Help). Each destination has its own too: `nav-item-inbox`, `nav-item-kanban`, and so on. These classes are part of the screen contract and do not change between releases; the Tailwind utility classes do.
+
+To color the menu text, target `text-muted-foreground` inside the group, not `rounded-md`. The group title and the links have both, but the item of the open screen only has `rounded-md`: it already has a background in the accent color, and a text color chosen for the menu background can disappear on top of it. Since `text-muted-foreground` comes from Tailwind, check the menu after updating. The color in the example is for the light theme; for the dark one, repeat the rule in the **Dark theme CSS** field with a light color.
+
+```css
+.nav-grupo .text-muted-foreground {
+	color: #3d4f45;
+}
+
+.nav-grupo-crm .text-muted-foreground {
+	color: #2f6f8f;
 }
 ```
 
@@ -117,8 +133,8 @@ This does not make the dedicated installation obsolete — see the comparison be
 Straight to the point, so that you do not find out in front of the client. Each line carries the measured reason, not the excuse:
 
 - **Domain per organization.** One installation, one domain. There is no domain column in the schema, the host-based branching in `proxy.ts` is a declared NOOP (it exists only as documentation of the intended topology), and at the Edge there is no database to query before deciding whom that host belongs to. A client who demands their own domain is asking for a **dedicated installation**.
-- **External fonts.** Custom CSS can select the bundled Outfit using `font-family: var(--font-outfit), sans-serif`, or system fonts. Font uploads and remote fonts are not supported. Atkinson Hyperlegible remains the default.
-- **Automatic themes.** The brand color derives the accent. Custom CSS can override the color tokens listed in `TOKENS_VISUAIS_DE_COR` using six-digit hex literals and the exact prefixes `[data-theme="light"]` and `[data-theme="dark"]` before a class. Check both modes after saving; the editor validates syntax and security, not contrast. The browser bar keeps the product's colors.
+- **Font.** Typography is the same in every installation. `next/font` resolves at **build** time, and the image your VPS downloads already arrives built — a font picker in the panel would save a value that nothing would read. (The font is Atkinson Hyperlegible, chosen by the Braille Institute for legibility; swapping it does not change brand perception and makes reading worse for whoever spends the day inside the system.)
+- **Theme.** The light/dark pair belongs to the design system. Your brand moves the **accent** — what is action, highlight and focus — and deliberately does **not** move the page background: the background is the same under every brand, and that is why the browser bar color is too.
 - **The LGPD data-subject report does not carry your brand — and that is on purpose.** See its own section below.
 - **The AI budget alarm** still goes out with our brand. It is the only known leak, and it stays: today that alarm has no schedule wired to it at all, so fixing its brand would change nothing anyone sees. It goes out when the alarm gets a real cron.
 - **Two technical names do not change**: the `X-Deskcomm-Signature` header of outbound webhooks and the session cookie. The first is a contract with third-party systems that already check that name; renaming it would break a client's integration **silently** — the receiver raises no error, it merely stops recognizing.

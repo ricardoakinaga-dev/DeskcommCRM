@@ -41,6 +41,8 @@ Ao alterar um token semântico, ajuste também seu alias de compatibilidade
 os controles e as telas antes de concluir: o editor valida segurança sintática,
 não o contraste da combinação escolhida.
 
+O editor tem **dois campos**. O primeiro vale nos dois temas; o segundo, **CSS do tema escuro**, vale só com o tema escuro ativo — ele é aplicado com o escopo do tema, então uma regra escrita ali não aparece no claro. É assim que se escolhe uma cor que funcione no escuro sem estragar o claro. As duas folhas são validadas juntas: se qualquer uma tiver regra inválida, nenhuma é aplicada e a tela Marca mostra qual campo corrigir.
+
 Exemplo:
 
 ```css
@@ -50,6 +52,20 @@ Exemplo:
 
 .rounded-md {
 	border-radius: 12px;
+}
+```
+
+**Cor por seção do menu lateral.** O menu tem classes estáveis, pensadas para este CSS. Todo grupo leva `nav-grupo`, e cada um leva também a sua: `nav-grupo-atendimento`, `nav-grupo-crm`, `nav-grupo-ia`, `nav-grupo-canais`, `nav-grupo-analise` e `nav-grupo-organizacao` (a do rodapé, com Configurações e Ajuda). Cada destino tem a dele: `nav-item-inbox`, `nav-item-kanban`, e assim por diante. Essas classes fazem parte do contrato da tela e não mudam entre versões; as classes utilitárias do Tailwind, sim.
+
+Para pintar o texto do menu, mire `text-muted-foreground` dentro do grupo, não `rounded-md`. O título do grupo e os links têm as duas, mas o item da tela aberta só tem `rounded-md`: ele já tem fundo na cor de destaque, e uma cor de texto escolhida para o fundo do menu pode sumir sobre esse fundo. Como `text-muted-foreground` é do Tailwind, confira o menu depois de atualizar. A cor do exemplo é para o tema claro; no escuro, repita a regra no campo **CSS do tema escuro** com uma cor clara.
+
+```css
+.nav-grupo .text-muted-foreground {
+	color: #3d4f45;
+}
+
+.nav-grupo-crm .text-muted-foreground {
+	color: #2f6f8f;
 }
 ```
 
@@ -116,8 +132,8 @@ Isso não torna a instalação dedicada obsoleta — ver a comparação abaixo, 
 Sendo direto, para você não descobrir na frente do cliente. Cada linha traz a razão medida, não a desculpa:
 
 - **Domínio por organização.** Uma instalação, um domínio. Não há coluna de domínio no schema, o desvio por host no `proxy.ts` é um NOOP declarado (existe só como documentação da topologia pretendida), e no Edge não há banco para consultar antes de decidir a quem aquele host pertence. Cliente que exige o próprio domínio pede **instalação dedicada**.
-- **Fonte externa.** O editor permite escolher a Outfit já incluída na imagem, ou fontes do sistema; não aceita upload nem carregamento de fontes remotas. A tipografia padrão continua Atkinson Hyperlegible.
-- **Tema automático.** A cor da marca deriva o accent. Fundos e textos próprios exigem o CSS personalizado descrito acima e conferência nos dois modos. A barra do navegador continua usando a régua do produto.
+- **Fonte.** A tipografia é a mesma em toda instalação. `next/font` resolve em tempo de **build**, e a imagem que a sua VPS baixa já vem construída — um seletor de fonte no painel salvaria um valor que nada leria. (A fonte é a Atkinson Hyperlegible, escolhida pelo Braille Institute por legibilidade; trocá-la não muda percepção de marca e piora a leitura de quem passa o dia no sistema.)
+- **Tema.** O par claro/escuro é do design system. A sua marca move o **accent** — o que é ação, destaque e foco —, e deliberadamente **não** move o fundo da página: o fundo é o mesmo em toda marca, e é por isso que a cor da barra do navegador também é.
 - **O relatório de LGPD do titular não leva a sua marca — e isso é de propósito.** Ver a seção própria abaixo.
 - **O alarme de orçamento de IA** ainda sai com a nossa marca. É o único vazamento conhecido, e ele fica: hoje esse alarme não tem agendamento nenhum ligado, então consertar a marca dele não mudaria nada que alguém veja. Sai quando o alarme ganhar cron de verdade.
 - **Dois nomes técnicos não mudam**: o cabeçalho `X-Deskcomm-Signature` dos webhooks de saída e o cookie de sessão. O primeiro é contrato com sistemas de terceiros que já conferem esse nome; renomear derrubaria integração de cliente **em silêncio** — o receptor não dá erro, apenas deixa de reconhecer.
